@@ -6,6 +6,11 @@
 #include "ruby.h"
 #include "crc32.h"
 
+#if !defined(RSTRING_LEN) 
+# define RSTRING_LEN(x) (RSTRING(x)->len) 
+# define RSTRING_PTR(x) (RSTRING(x)->ptr) 
+#endif
+
 static VALUE cBloomFilter;
 
 struct BloomFilter {
@@ -175,7 +180,7 @@ static VALUE bf_insert(VALUE self, VALUE key) {
 
     Check_Type(key, T_STRING);
     ckey = STR2CSTR(key);
-    len = (int) (RSTRING(key)->len); /* length of the string in bytes */
+    len = (int) (RSTRING_LEN(key)); /* length of the string in bytes */
 
     m = bf->m;
     k = bf->k;
@@ -206,7 +211,7 @@ static VALUE bf_delete(VALUE self, VALUE key) {
 
     Check_Type(key, T_STRING);
     ckey = STR2CSTR(key);
-    len = (int) (RSTRING(key)->len); /* length of the string in bytes */
+    len = (int) (RSTRING_LEN(key)); /* length of the string in bytes */
 
     m = bf->m;
     k = bf->k;
@@ -238,7 +243,7 @@ static VALUE bf_include(VALUE self, VALUE key) {
 
     Check_Type(key, T_STRING);
     ckey = STR2CSTR(key);
-    len = (int) (RSTRING(key)->len); /* length of the string in bytes */
+    len = (int) (RSTRING_LEN(key)); /* length of the string in bytes */
 
     m = bf->m;
     k = bf->k;
@@ -268,7 +273,7 @@ static VALUE bf_to_s(VALUE self) {
     Data_Get_Struct(self, struct BloomFilter, bf);
     str = rb_str_new(0, bf->m);
 
-    ptr = (unsigned char *) RSTRING(str)->ptr;
+    ptr = (unsigned char *) RSTRING_PTR(str);
     for (i = 0; i < bf->m; i++)
         *ptr++ = bucket_get(bf, i) ? '1' : '0';
 
